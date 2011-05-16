@@ -16,7 +16,11 @@ directory "/var/lib/ganglia/rrds" do
   recursive true
 end
 
-ips = search(:node, "recipes:ganglia").map {|node| node.ipaddress}
+query  = 'recipes:ganglia'
+if node[:ganglia][:cluster_role]
+  query += " AND role:#{node[:ganglia][:cluster_role]}"
+end
+ips = search(:node, query).map {|node| node.ipaddress}
 
 template "/etc/ganglia/gmetad.conf" do
   source "gmetad.conf.erb"
