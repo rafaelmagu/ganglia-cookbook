@@ -33,11 +33,16 @@ when "redhat", "centos", "fedora"
   user "ganglia"
 end
 
+# Set up a route for multicast
+route '239.2.11.71' do
+  device node[:ganglia][:network_interface]
+end
+
 directory "/etc/ganglia"
 
 template "/etc/ganglia/gmond.conf" do
   source "gmond.conf.erb"
-  variables( :cluster_name => node[:ganglia][:cluster_name] )
+  variables(:cluster_name => node[:ganglia][:cluster_name])
   notifies :restart, "service[ganglia-monitor]"
 end
 

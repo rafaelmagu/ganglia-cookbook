@@ -18,9 +18,9 @@ end
 
 query  = 'recipes:ganglia'
 if node[:ganglia][:cluster_role]
-  query += " AND role:#{node[:ganglia][:cluster_role]}"
+  query += " AND roles:#{node[:ganglia][:cluster_role]}"
 end
-ips = search(:node, query).map {|node| node.ipaddress}
+ips = search(:node, query).map {|node| (node[:cloud] || {})[:local_ipv4] || node[:ipaddress] }
 
 template "/etc/ganglia/gmetad.conf" do
   source "gmetad.conf.erb"
