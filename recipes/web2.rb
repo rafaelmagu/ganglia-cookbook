@@ -25,7 +25,7 @@ include_recipe 'apache2'
 include_recipe 'ganglia::gmetad'
 
 package 'subversion'
-path = '/var/www/ganglia-monitor-web-2.0'
+path = '/var/www/ganglia-misc'
 
 # Config and template directories
 %w{ conf dwoo }.each do |dir|
@@ -37,14 +37,30 @@ path = '/var/www/ganglia-monitor-web-2.0'
   end
 end
 
-subversion path do
-  repository 'https://ganglia.svn.sourceforge.net/svnroot/ganglia/branches/monitor-web-2.0/'
-  user node[:apache][:user]
-  group node[:apache][:user]
+git path do
+  repository 'git://github.com/vvuksan/ganglia-misc.git'
   action :export
 end
 
-execute 'make' do
-  cwd path
-  creates 'conf_default.php'
+path += '/ganglia-web'
+
+directory path do
+  owner node[:apache][:user]
+  group node[:apache][:user]
+  mode '0755'
+  recursive true
+end
+
+directory "#{path}/graph.d" do
+  owner node[:apache][:user]
+  group node[:apache][:user]
+  mode '0755'
+  recursive true
+end
+
+template "#{path}/conf_default.php" do
+  source 'conf_default.php.erb'
+  owner node[:apache][:user]
+  group node[:apache][:user]
+  mode '0644'
 end
