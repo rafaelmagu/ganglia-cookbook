@@ -3,5 +3,6 @@ default[:ganglia][:uri] = "http://sourceforge.net/projects/ganglia/files/ganglia
 default[:ganglia][:checksum] = "bb1a4953"
 default[:ganglia][:cluster_name] = "default"
 default[:ganglia][:network_interface] = 'eth0'
+default[:ganglia][:web][:version] = '2.1.2'
 default[:ganglia][:web][:graph_engine] = 'flot'
 default[:ganglia][:web][:auth_system] = 'readonly'

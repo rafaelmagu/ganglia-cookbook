@@ -38,6 +38,7 @@ path = '/var/www/ganglia-misc'
 end
 
 git path do
+  revision node[:ganglia][:web][:version] || 'HEAD'
   repository 'git://github.com/vvuksan/ganglia-misc.git'
   action :export
 end
