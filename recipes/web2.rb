@@ -25,7 +25,7 @@ include_recipe 'apache2'
 include_recipe 'ganglia::gmetad'
 
 package 'subversion'
-path = '/var/www/ganglia-misc'
+path = node['ganglia']['misc']['path']
 
 # Config and template directories
 %w{ conf dwoo }.each do |dir|
