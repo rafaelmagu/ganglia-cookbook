@@ -12,6 +12,7 @@ globals {
   cleanup_threshold = 300 /*secs */ 
   gexec = no             
   send_metadata_interval = 0     
+  override_hostname = <%= node.name %>
 } 
 
 /* If a cluster attribute is specified, then all gmond hosts are wrapped inside 
@@ -49,6 +50,7 @@ udp_recv_channel {
    an xml description of the state of the cluster */ 
 tcp_accept_channel { 
   port = 8649 
+  bind = 127.0.0.1
 } 
 
 /* Each metrics module that is referenced by gmond must be specified and 

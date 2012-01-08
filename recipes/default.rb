@@ -19,6 +19,15 @@
 
 case node[:platform]
 when "ubuntu", "debian"
+  apt_repository 'ganglia' do
+    uri 'http://ppa.launchpad.net/rufustfirefly/ganglia/ubuntu'
+    distribution node['lsb']['codename']
+    components ['main']
+    keyserver 'keyserver.ubuntu.com'
+    key 'A93EFBE2'
+    action :add
+  end
+
   package "ganglia-monitor"
 when "redhat", "centos", "fedora"
   include_recipe "ganglia::source"
