@@ -1,10 +1,9 @@
 default[:ganglia][:version] = "3.2.0"
 default[:ganglia][:uri] = "http://sourceforge.net/projects/ganglia/files/ganglia%20monitoring%20core/3.2.0/ganglia-3.2.0.tar.gz/download"
 default[:ganglia][:checksum] = '4fbc028ab6a9b085703a9cff8e0d26c0'
-default[:ganglia][:cluster_name] = "default"
 default['ganglia']['location'] = 'unspecified'
 default[:ganglia][:network_interface] = 'eth0'
-default[:ganglia][:web][:version] = 'ab8de2cfe2bc62cb90ab43944578248358ff7fa0'
+default[:ganglia][:web][:version] = '4.0.0'
 default[:ganglia][:web][:graph_engine] = 'flot'
 default[:ganglia][:web][:auth_system] = 'readonly'
 default[:ganglia][:web][:path] = '/opt/ganglia-web'

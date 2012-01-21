@@ -27,7 +27,7 @@ include_recipe 'ganglia::gmetad'
 path = node['ganglia']['web']['path']
 
 # Config and template directories
-%w{ conf dwoo }.each do |dir|
+%w{ conf dwoo/cache dwoo/compiled }.each do |dir|
   directory "/var/lib/ganglia/#{dir}" do
     owner node[:apache][:user]
     group node[:apache][:user]

@@ -26,8 +26,7 @@ ips = search(:node, query).map {|node| (node[:cloud] || {})[:local_ipv4] || node
 
 template "/etc/ganglia/gmetad.conf" do
   source "gmetad.conf.erb"
-  variables( :hosts => ips.join(" "),
-             :cluster_name => node[:ganglia][:cluster_name])
+  variables( :hosts => ips.join(" ") )
   notifies :restart, "service[gmetad]"
 end
 
