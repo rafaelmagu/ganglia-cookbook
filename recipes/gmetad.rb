@@ -18,15 +18,17 @@ directory "/var/lib/ganglia/rrds" do
   recursive true
 end
 
-query  = 'recipes:ganglia'
-if node[:ganglia][:cluster_role]
-  query += " AND roles:#{node[:ganglia][:cluster_role]}"
+query  = "recipes:ganglia AND ganglia_cluster_name:#{node['ganglia']['cluster_name']}"
+hosts = search(:node, query).map do |n|
+  # Get the ip
+  n['network']['interfaces'][n['ganglia']['network_interface']]['addresses'].find {|a, i|
+    i['family'] == 'inet'
+  }.first
 end
-ips = search(:node, query).map {|node| (node[:cloud] || {})[:local_ipv4] || node[:ipaddress] }
 
 template "/etc/ganglia/gmetad.conf" do
   source "gmetad.conf.erb"
-  variables( :hosts => ips.join(" ") )
+  variables({ :hosts => hosts })
   notifies :restart, "service[gmetad]"
 end
 

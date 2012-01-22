@@ -43,14 +43,46 @@ when "redhat", "centos", "fedora"
 end
 
 # Set up a route for multicast
-route '239.2.11.71' do
-  device node[:ganglia][:network_interface]
+if node['ganglia']['multicast']
+  route '239.2.11.71' do
+    device node[:ganglia][:network_interface]
+  end
 end
 
 directory "/etc/ganglia"
 
+# Set up send hosts for non-multicast nodes
+send_hosts = []
+unless node['ganglia']['multicast']
+  send_hosts = search(:node, "ganglia_receiver:true AND ganglia_cluster_name:#{node['ganglia']['cluster_name']}").map do |n|
+    n['network']['interfaces'][n['ganglia']['receiver_network_interface']]['addresses'].find {|a, i|
+      i['family'] == 'inet'
+    }.first
+  end
+end
+
+# Set up a 'receiver' or node that accepts connections from an allowed list of
+# udp senders
+recv_addr = nil
+
+if node['ganglia']['receiver']
+  # Find the reciever network interface ipv4 IP from the node data
+  recv_iface = node['ganglia']['receiver_network_interface']
+  recv_addr = node['network']['interfaces'][recv_iface]['addresses'].find {|a, i|
+    i['family'] == 'inet'
+  }.first
+
+  recv_hosts = search(:node, "recipes:ganglia AND ganglia_cluster_name:#{node['ganglia']['cluster_name']} AND ganglia_multicast:false").map do |n|
+    n['ipaddress']
+  end
+end
+
 template "/etc/ganglia/gmond.conf" do
   source "gmond.conf.erb"
+  variables({ :recv_bind_addr => recv_addr,
+              :recv_hosts     => recv_hosts,
+              :send_hosts     => send_hosts
+           })
   notifies :restart, "service[ganglia-monitor]"
 end
 
@@ -59,3 +91,4 @@ service "ganglia-monitor" do
   supports :restart => true
   action [ :enable, :start ]
 end
+
