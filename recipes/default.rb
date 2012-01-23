@@ -17,6 +17,8 @@
 # limitations under the License.
 #
 
+gem_package 'gmetric'
+
 case node[:platform]
 when "ubuntu", "debian"
   apt_repository 'ganglia' do
@@ -30,16 +32,24 @@ when "ubuntu", "debian"
 
   package "ganglia-monitor"
 when "redhat", "centos", "fedora"
-  include_recipe "ganglia::source"
-
-  execute "copy ganglia-monitor init script" do
-    command "cp " +
-      "/usr/src/ganglia-#{node[:ganglia][:version]}/gmond/gmond.init " +
-      "/etc/init.d/ganglia-monitor"
-    not_if "test -f /etc/init.d/ganglia-monitor"
+  remote_file '/usr/src/libganglia-3.2.0-1.x86_64.rpm' do
+    source 'http://vuksan.com/centos/RPMS/x86_64/libganglia-3.2.0-1.x86_64.rpm'
   end
-
-  user "ganglia"
+  rpm_package 'libganglia' do
+    source '/usr/src/libganglia-3.2.0-1.x86_64.rpm'
+  end
+  remote_file '/usr/src/ganglia-gmond-3.2.0-1.x86_64.rpm' do
+    source 'http://vuksan.com/centos/RPMS/x86_64/ganglia-gmond-3.2.0-1.x86_64.rpm'
+  end
+  rpm_package 'ganglia-gmond' do
+    source '/usr/src/ganglia-gmond-3.2.0-1.x86_64.rpm'
+  end
+  remote_file '/usr/src/ganglia-gmond-modules-python-3.2.0-1.x86_64.rpm' do
+    source 'http://vuksan.com/centos/RPMS/x86_64/ganglia-gmond-modules-python-3.2.0-1.x86_64.rpm'
+  end
+  rpm_package 'ganglia-gmond-modules-python' do
+    source '/usr/src/ganglia-gmond-modules-python-3.2.0-1.x86_64.rpm'
+  end
 end
 
 # Set up a route for multicast
@@ -48,8 +58,6 @@ if node['ganglia']['multicast']
     device node[:ganglia][:network_interface]
   end
 end
-
-directory "/etc/ganglia"
 
 # Set up send hosts for non-multicast nodes
 send_hosts = []
@@ -90,5 +98,26 @@ service "ganglia-monitor" do
   pattern "gmond"
   supports :restart => true
   action [ :enable, :start ]
+end
+
+# gmond DSO modules
+directory '/etc/ganglia/conf.d'  do
+  recursive true
+end
+
+remote_directory '/usr/lib/ganglia/python_modules' do
+  source 'gmond_python_modules'
+end
+
+template '/etc/ganglia/conf.d/modpython.conf' do
+  source 'gmond_python_modules_conf.d/modpython.conf.erb'
+  notifies :restart, 'service[ganglia-monitor]'
+end
+
+if node.recipes.include?('apache2')
+  template '/etc/ganglia/conf.d/apache_status.conf' do
+    source 'gmond_python_modules_conf.d/apache_status.pyconf.erb'
+    notifies :restart, 'service[ganglia-monitor]'
+  end
 end
 
