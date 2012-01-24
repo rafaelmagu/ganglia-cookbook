@@ -21,6 +21,7 @@ gem_package 'gmetric'
 
 case node[:platform]
 when "ubuntu", "debian"
+  service_name = 'ganglia-monitor'
   apt_repository 'ganglia' do
     uri 'http://ppa.launchpad.net/rufustfirefly/ganglia/ubuntu'
     distribution node['lsb']['codename']
@@ -32,6 +33,9 @@ when "ubuntu", "debian"
 
   package "ganglia-monitor"
 when "redhat", "centos", "fedora"
+  service_name = 'gmond'
+  package 'libconfuse'
+
   remote_file '/usr/src/libganglia-3.2.0-1.x86_64.rpm' do
     source 'http://vuksan.com/centos/RPMS/x86_64/libganglia-3.2.0-1.x86_64.rpm'
   end
@@ -43,6 +47,9 @@ when "redhat", "centos", "fedora"
   end
   rpm_package 'ganglia-gmond' do
     source '/usr/src/ganglia-gmond-3.2.0-1.x86_64.rpm'
+  end
+  link '/usr/lib/ganglia' do
+    to '/usr/lib64/ganglia'
   end
   remote_file '/usr/src/ganglia-gmond-modules-python-3.2.0-1.x86_64.rpm' do
     source 'http://vuksan.com/centos/RPMS/x86_64/ganglia-gmond-modules-python-3.2.0-1.x86_64.rpm'
@@ -91,10 +98,10 @@ template "/etc/ganglia/gmond.conf" do
               :recv_hosts     => recv_hosts,
               :send_hosts     => send_hosts
            })
-  notifies :restart, "service[ganglia-monitor]"
+  notifies :restart, "service[#{service_name}]"
 end
 
-service "ganglia-monitor" do
+service service_name do
   pattern "gmond"
   supports :restart => true
   action [ :enable, :start ]
@@ -111,13 +118,13 @@ end
 
 template '/etc/ganglia/conf.d/modpython.conf' do
   source 'gmond_python_modules_conf.d/modpython.conf.erb'
-  notifies :restart, 'service[ganglia-monitor]'
+  notifies :restart, "service[#{service_name}]"
 end
 
 if node.recipes.include?('apache2')
   template '/etc/ganglia/conf.d/apache_status.pyconf' do
     source 'gmond_python_modules_conf.d/apache_status.pyconf.erb'
-    notifies :restart, 'service[ganglia-monitor]'
+    notifies :restart, "service[#{service_name}]"
   end
 end
 
