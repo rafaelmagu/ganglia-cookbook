@@ -115,7 +115,7 @@ template '/etc/ganglia/conf.d/modpython.conf' do
 end
 
 if node.recipes.include?('apache2')
-  template '/etc/ganglia/conf.d/apache_status.conf' do
+  template '/etc/ganglia/conf.d/apache_status.pyconf' do
     source 'gmond_python_modules_conf.d/apache_status.pyconf.erb'
     notifies :restart, 'service[ganglia-monitor]'
   end
