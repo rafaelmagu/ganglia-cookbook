@@ -18,6 +18,7 @@
 #
 
 gem_package 'gmetric'
+v = node['ganglia']['version']
 
 case node[:platform]
 when "ubuntu", "debian"
@@ -34,28 +35,36 @@ when "ubuntu", "debian"
   package "ganglia-monitor"
 when "redhat", "centos", "fedora"
   service_name = 'gmond'
-  package 'libconfuse'
 
-  remote_file '/usr/src/libganglia-3.2.0-1.x86_64.rpm' do
-    source 'http://vuksan.com/centos/RPMS/x86_64/libganglia-3.2.0-1.x86_64.rpm'
+  remote_file '/usr/src/libconfuse-2.6-1.x86_64.rpm' do
+    source 'http://vuksan.com/centos/RPMS/x86_64/libconfuse-2.6-1.x86_64.rpm'
+  end
+  rpm_package 'libconfuse' do
+    source '/usr/src/libconfuse-2.6-1.x86_64.rpm'
+  end
+  remote_file "/usr/src/libganglia-#{v}-1.x86_64.rpm" do
+    source "http://vuksan.com/centos/RPMS/x86_64/libganglia-#{v}-1.x86_64.rpm"
   end
   rpm_package 'libganglia' do
-    source '/usr/src/libganglia-3.2.0-1.x86_64.rpm'
+    source "/usr/src/libganglia-#{v}-1.x86_64.rpm"
+    version "#{v}-1"
   end
-  remote_file '/usr/src/ganglia-gmond-3.2.0-1.x86_64.rpm' do
-    source 'http://vuksan.com/centos/RPMS/x86_64/ganglia-gmond-3.2.0-1.x86_64.rpm'
+  remote_file "/usr/src/ganglia-gmond-#{v}-1.x86_64.rpm" do
+    source "http://vuksan.com/centos/RPMS/x86_64/ganglia-gmond-#{v}-1.x86_64.rpm"
   end
   rpm_package 'ganglia-gmond' do
-    source '/usr/src/ganglia-gmond-3.2.0-1.x86_64.rpm'
+    source "/usr/src/ganglia-gmond-#{v}-1.x86_64.rpm"
+    version "#{v}-1"
   end
   link '/usr/lib/ganglia' do
     to '/usr/lib64/ganglia'
   end
-  remote_file '/usr/src/ganglia-gmond-modules-python-3.2.0-1.x86_64.rpm' do
-    source 'http://vuksan.com/centos/RPMS/x86_64/ganglia-gmond-modules-python-3.2.0-1.x86_64.rpm'
+  remote_file "/usr/src/ganglia-gmond-modules-python-#{v}-1.x86_64.rpm" do
+    source "http://vuksan.com/centos/RPMS/x86_64/ganglia-gmond-modules-python-#{v}-1.x86_64.rpm"
   end
   rpm_package 'ganglia-gmond-modules-python' do
-    source '/usr/src/ganglia-gmond-modules-python-3.2.0-1.x86_64.rpm'
+    source "/usr/src/ganglia-gmond-modules-python-#{v}-1.x86_64.rpm"
+    version "#{v}-1"
   end
 end
 

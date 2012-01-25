@@ -1,4 +1,4 @@
-default[:ganglia][:version] = "3.2.0"
+default['ganglia']['version'] = '3.2.0'
 default[:ganglia][:uri] = "http://sourceforge.net/projects/ganglia/files/ganglia%20monitoring%20core/3.2.0/ganglia-3.2.0.tar.gz/download"
 default[:ganglia][:checksum] = '4fbc028ab6a9b085703a9cff8e0d26c0'
 default['ganglia']['location'] = 'unspecified'
