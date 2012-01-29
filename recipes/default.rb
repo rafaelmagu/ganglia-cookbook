@@ -75,6 +75,11 @@ if node['ganglia']['multicast']
   end
 end
 
+# IP address to bind
+ip = ((node['network']['interfaces'][node['ganglia']['network_interface']] || {})['addresses'] || {}).find {|a, i|
+      i['family'] == 'inet'
+    }.first || node['ipaddress']
+
 # Set up send hosts for non-multicast nodes
 send_hosts = []
 unless node['ganglia']['multicast']
@@ -103,7 +108,8 @@ end
 
 template "/etc/ganglia/gmond.conf" do
   source "gmond.conf.erb"
-  variables({ :recv_bind_addr => recv_addr,
+  variables({ :ip             => ip,
+              :recv_bind_addr => recv_addr,
               :recv_hosts     => recv_hosts,
               :send_hosts     => send_hosts
            })

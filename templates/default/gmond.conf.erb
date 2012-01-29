@@ -15,6 +15,7 @@ globals {
   gexec = no
   send_metadata_interval = 0
   override_hostname = <%= node.name %>
+  override_ip = <%= @ip %>
 }
 
 <% if node['ganglia']['cluster_name'] %>
@@ -42,39 +43,29 @@ udp_send_channel {
   mcast_join = 239.2.11.71
   mcast_if = <%= node[:ganglia][:network_interface] %>
   port = 8649
-  ttl = 1
-}
-<% else %>
-  <% @send_hosts.each do |host| %>
-udp_send_channel {
-  host = 127.0.0.1
-  port = 8649
-  ttl = 1
 }
 
-udp_send_channel {
-  host = <%= host %>
-  port = 8649
-  ttl = 1
-}
-  <% end %>
-<% end %>
-
-/* You can specify as many udp_recv_channels as you like as well. */
-
-udp_recv_channel {
-  port = 8649
-  bind = 127.0.0.1
-}
-
-<% if node['ganglia']['multicast'] %>
 udp_recv_channel {
   mcast_join = 239.2.11.71
   mcast_if = <%= node[:ganglia][:network_interface] %>
   port = 8649
   bind = 239.2.11.71
 }
+<% else %>
+  <% @send_hosts.each do |host| %>
+udp_send_channel {
+  host = <%= host %>
+  port = 8649
+  ttl = 1
+}
+  <% end %>
+
+udp_recv_channel {
+  port = 8649
+}
 <% end %>
+
+/* You can specify as many udp_recv_channels as you like as well. */
 
 <% if node['ganglia']['receiver'] %>
 udp_recv_channel {
@@ -92,7 +83,6 @@ udp_recv_channel {
     <% end %>
   }
 }
-<% end %>
 
 /* You can specify as many tcp_accept_channels as you like to share
    an xml description of the state of the cluster */
@@ -100,6 +90,7 @@ tcp_accept_channel {
   port = 8649
   bind = 127.0.0.1
 }
+<% end %>
 
 /* Each metrics module that is referenced by gmond must be specified and
    loaded. If the module has been statically linked with gmond, it does not
