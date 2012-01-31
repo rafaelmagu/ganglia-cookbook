@@ -36,6 +36,8 @@ when "ubuntu", "debian"
 when "redhat", "centos", "fedora"
   service_name = 'gmond'
 
+  user 'ganglia'
+
   remote_file '/usr/src/libconfuse-2.6-1.x86_64.rpm' do
     source 'http://vuksan.com/centos/RPMS/x86_64/libconfuse-2.6-1.x86_64.rpm'
   end
@@ -70,6 +72,14 @@ end
 
 # Set up a route for multicast
 if node['ganglia']['multicast']
+  # avahi allow host name resolution
+  case node['platform']
+  when "ubuntu", "debian"
+    package 'avahi-daemon'
+  when "redhat", "centos", "fedora"
+    package 'avahi-daemon'
+  end
+  # Add mdns route
   route '239.2.11.71' do
     device node[:ganglia][:network_interface]
   end

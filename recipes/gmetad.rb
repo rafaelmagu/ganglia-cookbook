@@ -19,12 +19,13 @@ directory "/var/lib/ganglia/rrds" do
 end
 
 query  = "recipes:ganglia AND ganglia_cluster_name:#{node['ganglia']['cluster_name']}"
-hosts = search(:node, query).map do |n|
+hosts = {}
+search(:node, query).each do |n|
   # Get the ip
-  ((n['network']['interfaces'][n['ganglia']['network_interface']]['addresses'] || {}).find {|a, i|
+  hosts[n.name] = ((n['network']['interfaces'][n['ganglia']['network_interface']]['addresses'] || {}).find {|a, i|
     i['family'] == 'inet'
   } || []).first
-end.compact
+end
 
 template "/etc/ganglia/gmetad.conf" do
   source "gmetad.conf.erb"
