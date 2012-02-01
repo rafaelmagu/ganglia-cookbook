@@ -37,6 +37,7 @@ when "redhat", "centos", "fedora"
   service_name = 'gmond'
 
   user 'ganglia'
+  group 'ganglia'
 
   remote_file '/usr/src/libconfuse-2.6-1.x86_64.rpm' do
     source 'http://vuksan.com/centos/RPMS/x86_64/libconfuse-2.6-1.x86_64.rpm'
@@ -143,13 +144,32 @@ end
 
 template '/etc/ganglia/conf.d/modpython.conf' do
   source 'gmond_python_modules_conf.d/modpython.conf.erb'
+  owner 'ganglia'
+  group 'ganglia'
   notifies :restart, "service[#{service_name}]"
 end
 
 if node.recipes.include?('apache2')
   template '/etc/ganglia/conf.d/apache_status.pyconf' do
     source 'gmond_python_modules_conf.d/apache_status.pyconf.erb'
+    owner 'ganglia'
+    group 'ganglia'
     notifies :restart, "service[#{service_name}]"
   end
 end
 
+if node.recipes.include?('mysql::server')
+  case node['platform']
+  when "ubuntu", "debian"
+    package 'python-mysqldb'
+  when "redhat", "centos", "fedora"
+    package 'MySQL-python'
+  end
+
+  template '/etc/ganglia/conf.d/mysql.pyconf' do
+    source 'gmond_python_modules_conf.d/mysql.pyconf.erb'
+    owner 'ganglia'
+    group 'ganglia'
+    notifies :restart, "service[#{service_name}]"
+  end
+end
