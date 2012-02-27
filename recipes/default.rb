@@ -166,10 +166,11 @@ if node.recipes.include?('mysql::server')
     package 'MySQL-python'
   end
 
-  template '/etc/ganglia/conf.d/mysql.pyconf' do
-    source 'gmond_python_modules_conf.d/mysql.pyconf.erb'
-    owner 'ganglia'
-    group 'ganglia'
-    notifies :restart, "service[#{service_name}]"
-  end
+  # FIXME: These take too much RAM. Pare them down
+  #template '/etc/ganglia/conf.d/mysql.pyconf' do
+    #source 'gmond_python_modules_conf.d/mysql.pyconf.erb'
+    #owner 'ganglia'
+    #group 'ganglia'
+    #notifies :restart, "service[#{service_name}]"
+  #end
 end
