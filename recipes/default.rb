@@ -39,6 +39,8 @@ when "redhat", "centos", "fedora"
   user 'ganglia'
   group 'ganglia'
 
+  package 'apr'
+
   remote_file '/usr/src/libconfuse-2.6-1.x86_64.rpm' do
     source 'http://vuksan.com/centos/RPMS/x86_64/libconfuse-2.6-1.x86_64.rpm'
   end
@@ -78,7 +80,7 @@ if node['ganglia']['multicast']
   when "ubuntu", "debian"
     package 'avahi-daemon'
   when "redhat", "centos", "fedora"
-    package 'avahi-daemon'
+    package 'avahi'
   end
   # Add mdns route
   route '239.2.11.71' do
@@ -87,9 +89,9 @@ if node['ganglia']['multicast']
 end
 
 # IP address to bind
-ip = ((node['network']['interfaces'][node['ganglia']['network_interface']] || {})['addresses'] || {}).find {|a, i|
+ip = (((node['network']['interfaces'][node['ganglia']['network_interface']] || {})['addresses'] || {}).find {|a, i|
       i['family'] == 'inet'
-    }.first || node['ipaddress']
+    } || []).first || node['ipaddress']
 
 # Set up send hosts for non-multicast nodes
 send_hosts = []
