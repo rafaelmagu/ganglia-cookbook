@@ -115,7 +115,11 @@ if node['ganglia']['receiver']
   }.first
 
   recv_hosts = search(:node, "recipes:ganglia AND ganglia_cluster_name:#{node['ganglia']['cluster_name']} AND ganglia_multicast:false").map do |n|
-    n['ipaddress']
+    if n['cloud'] && n['cloud']['provider'] == 'ec2'
+      n['cloud']['public_ipv4']
+    else
+      n['ipaddress']
+    end
   end
 end
 
