@@ -3,6 +3,10 @@ if platform?( "redhat", "centos", "fedora" )
   package "libconfuse-devel"
   package "expat-devel"
   package "rrdtool-devel"
+elsif platform?('ubuntu', 'debian')
+  %w{ libconfuse-dev librrd-dev }.each do |pkg|
+    package pkg
+  end
 end
 
 remote_file "/usr/src/ganglia-#{node[:ganglia][:version]}.tar.gz" do
