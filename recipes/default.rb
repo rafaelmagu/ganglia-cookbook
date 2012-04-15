@@ -180,3 +180,12 @@ if node.recipes.include?('mysql::server')
     #notifies :restart, "service[#{service_name}]"
   #end
 end
+
+if node.recipes.include?('redis')
+  template '/etc/ganglia/conf.d/redis.pyconf' do
+    source 'gmond_python_modules_conf.d/redis.pyconf.erb'
+    owner 'ganglia'
+    group 'ganglia'
+    notifies :restart, "service[#{service_name}]"
+  end
+end
