@@ -19,10 +19,10 @@
 
 gem_package 'gmetric'
 v = node['ganglia']['version']
+service_name = 'ganglia-monitor'
 
 case node[:platform]
 when "ubuntu", "debian"
-  service_name = 'ganglia-monitor'
   apt_repository 'ganglia' do
     uri 'http://ppa.launchpad.net/rufustfirefly/ganglia/ubuntu'
     distribution node['lsb']['codename']
@@ -34,43 +34,45 @@ when "ubuntu", "debian"
 
   package "ganglia-monitor"
 when "redhat", "centos", "fedora"
-  service_name = 'gmond'
+  #service_name = 'gmond'
 
   user 'ganglia'
   group 'ganglia'
 
-  package 'apr'
+  # FIXME: See https://github.com/ganglia/monitor-core/issues/28
+  include_recipe 'ganglia::source'
+#  package 'apr'
 
-  remote_file '/usr/src/libconfuse-2.6-1.x86_64.rpm' do
-    source 'http://vuksan.com/centos/RPMS/x86_64/libconfuse-2.6-1.x86_64.rpm'
-  end
-  rpm_package 'libconfuse' do
-    source '/usr/src/libconfuse-2.6-1.x86_64.rpm'
-  end
-  remote_file "/usr/src/libganglia-#{v}-1.x86_64.rpm" do
-    source "http://vuksan.com/centos/RPMS/x86_64/libganglia-#{v}-1.x86_64.rpm"
-  end
-  rpm_package 'libganglia' do
-    source "/usr/src/libganglia-#{v}-1.x86_64.rpm"
-    version "#{v}-1"
-  end
-  remote_file "/usr/src/ganglia-gmond-#{v}-1.x86_64.rpm" do
-    source "http://vuksan.com/centos/RPMS/x86_64/ganglia-gmond-#{v}-1.x86_64.rpm"
-  end
-  rpm_package 'ganglia-gmond' do
-    source "/usr/src/ganglia-gmond-#{v}-1.x86_64.rpm"
-    version "#{v}-1"
-  end
-  link '/usr/lib/ganglia' do
-    to '/usr/lib64/ganglia'
-  end
-  remote_file "/usr/src/ganglia-gmond-modules-python-#{v}-1.x86_64.rpm" do
-    source "http://vuksan.com/centos/RPMS/x86_64/ganglia-gmond-modules-python-#{v}-1.x86_64.rpm"
-  end
-  rpm_package 'ganglia-gmond-modules-python' do
-    source "/usr/src/ganglia-gmond-modules-python-#{v}-1.x86_64.rpm"
-    version "#{v}-1"
-  end
+  #remote_file '/usr/src/libconfuse-2.6-1.x86_64.rpm' do
+    #source 'http://vuksan.com/centos/RPMS/x86_64/libconfuse-2.6-1.x86_64.rpm'
+  #end
+  #rpm_package 'libconfuse' do
+    #source '/usr/src/libconfuse-2.6-1.x86_64.rpm'
+  #end
+  #remote_file "/usr/src/libganglia-#{v}-1.x86_64.rpm" do
+    #source "http://vuksan.com/centos/RPMS/x86_64/libganglia-#{v}-1.x86_64.rpm"
+  #end
+  #rpm_package 'libganglia' do
+    #source "/usr/src/libganglia-#{v}-1.x86_64.rpm"
+    #version "#{v}-1"
+  #end
+  #remote_file "/usr/src/ganglia-gmond-#{v}-1.x86_64.rpm" do
+    #source "http://vuksan.com/centos/RPMS/x86_64/ganglia-gmond-#{v}-1.x86_64.rpm"
+  #end
+  #rpm_package 'ganglia-gmond' do
+    #source "/usr/src/ganglia-gmond-#{v}-1.x86_64.rpm"
+    #version "#{v}-1"
+  #end
+  #link '/usr/lib/ganglia' do
+    #to '/usr/lib64/ganglia'
+  #end
+  #remote_file "/usr/src/ganglia-gmond-modules-python-#{v}-1.x86_64.rpm" do
+    #source "http://vuksan.com/centos/RPMS/x86_64/ganglia-gmond-modules-python-#{v}-1.x86_64.rpm"
+  #end
+  #rpm_package 'ganglia-gmond-modules-python' do
+    #source "/usr/src/ganglia-gmond-modules-python-#{v}-1.x86_64.rpm"
+    #version "#{v}-1"
+  #end
 end
 
 # Set up a route for multicast
