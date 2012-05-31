@@ -40,6 +40,13 @@ execute "install ganglia" do
   cwd src_path
 end
 
+if platform?( "redhat", "centos", "fedora" )
+  execute "install ganglia initscripts" do
+    command "cp #{src_path}/gmond/gmond.init /etc/init.d/ganglia-monitor"
+    creates '/etc/init.d/ganglia-monitor'
+  end
+end
+
 link "/usr/lib/ganglia" do
   to "/usr/lib64/ganglia"
   only_if do
