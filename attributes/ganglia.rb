@@ -7,8 +7,7 @@ default['ganglia']['location'] = 'unspecified'
 default[:ganglia][:network_interface] = 'eth0'
 default['ganglia']['cluster_name'] = 'default'
 default['ganglia']['multicast'] = true
-# override hostname fails on 3.2 on redhat
-default['ganglia']['override_hostname'] = !%w{ centos redhat }.include?(node['platform'])
+default['ganglia']['override_hostname'] = true
 default['ganglia']['receiver'] = false
 default['ganglia']['receiver_network_interface'] = 'eth1'
 default['ganglia']['send_to_graphite'] = false
