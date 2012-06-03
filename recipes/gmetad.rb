@@ -23,8 +23,8 @@ hosts = {}
 search(:node, query).each do |n|
   # Get the ip
   #
-  # Use the public ipv4 address for ec2 (for now)
-  if n['cloud'] && n['cloud']['provider'] == 'ec2'
+  # Use the public ipv4 address (for now)
+  if n['cloud'] && n['cloud']['public_ipv4']
     hosts[n.name] = n['cloud']['public_ipv4']
   else
     hosts[n.name] = ((n['network']['interfaces'][n['ganglia']['network_interface']]['addresses'] || {}).find {|a, i|
