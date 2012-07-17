@@ -13,7 +13,7 @@ default['ganglia']['receiver_network_interface'] = 'eth1'
 default['ganglia']['send_to_graphite'] = false
 default['ganglia']['graphite_prefix'] = 'ganglia'
 
-default[:ganglia][:web][:version] = '4.0.0'
+default[:ganglia][:web][:version] = '3.5.2'
 default[:ganglia][:web][:graph_engine] = 'rrdtool'
 default[:ganglia][:web][:auth_system] = 'readonly'
 default[:ganglia][:web][:path] = '/opt/ganglia-web'
