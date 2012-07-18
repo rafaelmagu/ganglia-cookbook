@@ -58,7 +58,7 @@ $conf['rrdtool_slope_mode'] = true;
 $conf['rrdcached_socket'] = "";
 
 # Location for modular-graph files.
-$conf['graphdir']='./graph.d';
+$conf['graphdir']= $conf['gweb_root'] . '/graph.d';
 
 # Display statistical values on RRD graphs; i.e.: average, min, max
 $conf['graphreport_stats'] = true;
@@ -113,6 +113,7 @@ $conf['cpu_nice_color'] = "ffea00";
 $conf['cpu_system_color'] = "dd0000";
 $conf['cpu_wio_color'] = "ff8a60";
 $conf['cpu_idle_color'] = "e2e2f2";
+$conf['cpu_steal_color'] = "990099";
 
 #
 # Colors for the MEMORY report graph
@@ -169,8 +170,14 @@ $conf['default_metric'] = "load_one";
 $conf['strip_domainname'] = false;
 
 #
-# Optional summary graphs
+# hide down hosts from cluster view
 #
+$conf['cluster_hide_down_hosts'] = false;
+
+#
+# Optional summary graphs
+# This function is deprecated. Please configure included reports
+# in the UI or default.json. Please do not use 
 #$conf['optional_graphs'] = array('packet');
 
 # Enable Zoom support on graphs
@@ -281,6 +288,16 @@ $conf['graph_sizes'] = array(
 $conf['default_graph_size'] = 'default';
 $conf['graph_sizes_keys'] = array_keys( $conf['graph_sizes'] );
 
+# sets a default graph size separate from the regular default graph size. You
+# can also set this default on a per-view basis by setting 'default_size' in 
+# the view .json file.
+$conf['default_view_graph_size'] = 'medium';
+
+# The API can serve up graphs, but the URLs should be fully qualified.
+# The default value is a hack to serve up the called hostname when
+# possible. It is best to define this manually.
+$conf['external_location'] = "http://localhost/ganglia-2";
+
 # In earlier versions of gmetad, hostnames were handled in a case
 # sensitive manner
 # If your hostname directories have been renamed to lower case,
@@ -293,6 +310,10 @@ $conf['case_sensitive_hostnames'] = true;
 # The following property controls whether the graphs contained in metric
 # groups are initially displayed or collapsed
 $conf['metric_groups_initially_collapsed'] = false;
+
+# The following property controls whether opening a metric group is
+# remembered in your sesssion
+$conf['remember_open_metric_groups'] = true;
 
 # Overlay events on graphs. Those are defined by specifying all the events
 # in events.json
@@ -339,11 +360,14 @@ $conf['heatmaps_enabled'] = 1;
 $conf['decorated_graph_title'] = true;
 
 # If set to yes, will display stacked graph (aggregated metric across hosts) in cluster view
-$conf['show_stacked_graphs'] = 0;
+$conf['show_stacked_graphs'] = 1;
 
 # If set to false the grid view under the main tab will be displayed only if 
 # the grid name is not "unspecified", or a parent grid has been defined.
 # If set to true the grid view will always be displayed even when only a
 # single cluster has been defined.
 $conf['always_display_grid_view'] = true;
+
+# Control whether arguments can be passed into php reports
+$conf['enable_pass_in_arguments_to_optional_graphs'] = false;
 ?>
