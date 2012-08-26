@@ -10,6 +10,7 @@ default['ganglia']['multicast'] = true
 default['ganglia']['override_hostname'] = true
 default['ganglia']['override_ip'] = true
 default['ganglia']['receiver'] = false
+default['ganglia']['enable_receiver_acl'] = true
 default['ganglia']['receiver_network_interface'] = 'eth1'
 default['ganglia']['send_to_graphite'] = false
 default['ganglia']['graphite_prefix'] = 'ganglia'

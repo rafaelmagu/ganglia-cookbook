@@ -79,7 +79,8 @@ udp_recv_channel {
 udp_recv_channel {
   port = 8649
   bind = <%= @recv_bind_addr %>
-
+  
+  <% if node['ganglia']['enable_receiver_acl'] %>
   acl {
     default = "deny"
     <% @recv_hosts.each do |ip| %>
@@ -90,6 +91,7 @@ udp_recv_channel {
     }
     <% end %>
   }
+  <% end %>
 }
 
 /* You can specify as many tcp_accept_channels as you like to share
