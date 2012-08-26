@@ -18,7 +18,9 @@ globals {
   <% if node['ganglia']['override_hostname'] %>
   override_hostname = <%= node.name %>
   <% end %>
+  <% if node['ganglia']['override_ip'] %>
   override_ip = <%= @ip %>
+  <% end %>
   <% else %>
   send_metadata_interval = 0
   <% end %>

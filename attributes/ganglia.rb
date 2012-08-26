@@ -8,6 +8,7 @@ default[:ganglia][:network_interface] = 'eth0'
 default['ganglia']['cluster_name'] = 'default'
 default['ganglia']['multicast'] = true
 default['ganglia']['override_hostname'] = true
+default['ganglia']['override_ip'] = true
 default['ganglia']['receiver'] = false
 default['ganglia']['receiver_network_interface'] = 'eth1'
 default['ganglia']['send_to_graphite'] = false
