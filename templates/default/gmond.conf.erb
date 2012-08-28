@@ -93,14 +93,13 @@ udp_recv_channel {
   }
   <% end %>
 }
+<% end %>
 
 /* You can specify as many tcp_accept_channels as you like to share
    an xml description of the state of the cluster */
 tcp_accept_channel {
   port = 8649
-  bind = 127.0.0.1
 }
-<% end %>
 
 /* Each metrics module that is referenced by gmond must be specified and
    loaded. If the module has been statically linked with gmond, it does not
