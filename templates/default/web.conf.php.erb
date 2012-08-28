@@ -10,8 +10,8 @@
 #  'enabled': Guest users may view public clusters.  Login is required to make changes.  
 #             An administrator must configure an authentication scheme and ACL rules.
 # 'disabled': Guest users may perform any actions, including edits.  No authentication is required.
-$conf['auth_system'] = '<%= node[:ganglia][:web][:auth_system] || 'readonly' %>';
+$conf['auth_system'] = '<%= node['ganglia']['web']['auth_system'] || 'readonly' %>';
 
 # Graph Engine to use
-$conf['graph_engine'] = '<%= node[:ganglia][:web][:graph_engine] || 'rrdtool' %>';
+$conf['graph_engine'] = '<%= node['ganglia']['web']['graph_engine'] || 'rrdtool' %>';
 ?>

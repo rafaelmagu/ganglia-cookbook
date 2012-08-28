@@ -21,7 +21,7 @@ gem_package 'gmetric'
 v = node['ganglia']['version']
 service_name = 'ganglia-monitor'
 
-case node[:platform]
+case node['platform']
 when "ubuntu", "debian"
   apt_repository 'ganglia' do
     uri 'http://ppa.launchpad.net/rufustfirefly/ganglia/ubuntu'
@@ -88,7 +88,7 @@ if node['ganglia']['multicast']
   end
   # Add mdns route
   route '239.2.11.71' do
-    device node[:ganglia][:network_interface]
+    device node['ganglia']['network_interface']
   end
 end
 
@@ -100,10 +100,14 @@ ip = (((node['network']['interfaces'][node['ganglia']['network_interface']] || {
 # Set up send hosts for non-multicast nodes
 send_hosts = []
 unless node['ganglia']['multicast']
-  send_hosts = search(:node, "ganglia_receiver:true AND ganglia_cluster_name:#{node['ganglia']['cluster_name']}").map do |n|
-    n['network']['interfaces'][n['ganglia']['receiver_network_interface']]['addresses'].find {|a, i|
-      i['family'] == 'inet'
-    }.first
+  if Chef::Config['solo']
+    Chef::Log.warn("This recipe uses search. Chef Solo does not support search.")
+  else
+    send_hosts = search(:node, "ganglia_receiver:true AND ganglia_cluster_name:#{node['ganglia']['cluster_name']}").map do |n|
+      n['network']['interfaces'][n['ganglia']['receiver_network_interface']]['addresses'].find {|a, i|
+        i['family'] == 'inet'
+      }.first
+    end
   end
 end
 
@@ -118,11 +122,15 @@ if node['ganglia']['receiver']
     i['family'] == 'inet'
   }.first
 
-  recv_hosts = search(:node, "recipes:ganglia AND ganglia_cluster_name:#{node['ganglia']['cluster_name']} AND ganglia_multicast:false").map do |n|
-    if n['cloud'] && n['cloud']['public_ipv4']
-      n['cloud']['public_ipv4']
-    else
-      n['ipaddress']
+  if Chef::Config['solo']
+    Chef::Log.warn("This recipe uses search. Chef Solo does not support search.")
+  else
+    recv_hosts = search(:node, "recipes:ganglia AND ganglia_cluster_name:#{node['ganglia']['cluster_name']} AND ganglia_multicast:false").map do |n|
+      if n['cloud'] && n['cloud']['public_ipv4']
+        n['cloud']['public_ipv4']
+      else
+        n['ipaddress']
+      end
     end
   end
 end
@@ -159,16 +167,15 @@ template '/etc/ganglia/conf.d/modpython.conf' do
   notifies :restart, "service[#{service_name}]"
 end
 
-if node.recipes.include?('apache2')
-  template '/etc/ganglia/conf.d/apache_status.pyconf' do
-    source 'gmond_python_modules_conf.d/apache_status.pyconf.erb'
-    owner 'ganglia'
-    group 'ganglia'
-    notifies :restart, "service[#{service_name}]"
-  end
+template '/etc/ganglia/conf.d/apache_status.pyconf' do
+  source 'gmond_python_modules_conf.d/apache_status.pyconf.erb'
+  owner 'ganglia'
+  group 'ganglia'
+  notifies :restart, "service[#{service_name}]"
+  only_if { node['recipes'].include?('apache2') }
 end
 
-if node.recipes.include?('mysql::server')
+if node['recipes'].include?('mysql::server')
   case node['platform']
   when "ubuntu", "debian"
     package 'python-mysqldb'
@@ -185,11 +192,10 @@ if node.recipes.include?('mysql::server')
   #end
 end
 
-if node.recipes.include?('redis')
-  template '/etc/ganglia/conf.d/redis.pyconf' do
-    source 'gmond_python_modules_conf.d/redis.pyconf.erb'
-    owner 'ganglia'
-    group 'ganglia'
-    notifies :restart, "service[#{service_name}]"
-  end
+template '/etc/ganglia/conf.d/redis.pyconf' do
+  source 'gmond_python_modules_conf.d/redis.pyconf.erb'
+  owner 'ganglia'
+  group 'ganglia'
+  notifies :restart, "service[#{service_name}]"
+  only_if { node['recipes'].include?('redis') }
 end

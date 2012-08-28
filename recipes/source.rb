@@ -9,15 +9,15 @@ elsif platform?('ubuntu', 'debian')
   end
 end
 
-remote_file "/usr/src/ganglia-#{node[:ganglia][:version]}.tar.gz" do
-  source node[:ganglia][:uri]
-  checksum node[:ganglia][:checksum]
+remote_file "/usr/src/ganglia-#{node['ganglia']['version']}.tar.gz" do
+  source node['ganglia']['uri']
+  checksum node['ganglia']['checksum']
 end
 
-src_path = "/usr/src/ganglia-#{node[:ganglia][:version]}"
+src_path = "/usr/src/ganglia-#{node['ganglia']['version']}"
 
 execute "untar ganglia" do
-  command "tar xzf ganglia-#{node[:ganglia][:version]}.tar.gz"
+  command "tar xzf ganglia-#{node['ganglia']['version']}.tar.gz"
   creates src_path
   cwd "/usr/src"
 end
@@ -40,17 +40,16 @@ execute "install ganglia" do
   cwd src_path
 end
 
-if platform?( "redhat", "centos", "fedora" )
-  execute "install ganglia initscripts" do
-    command "cp #{src_path}/gmond/gmond.init /etc/init.d/ganglia-monitor"
-    creates '/etc/init.d/ganglia-monitor'
-  end
+execute "install ganglia initscripts" do
+  command "cp #{src_path}/gmond/gmond.init /etc/init.d/ganglia-monitor"
+  creates '/etc/init.d/ganglia-monitor'
+  only_if { platform?( "redhat", "centos", "fedora" ) }
 end
 
 link "/usr/lib/ganglia" do
   to "/usr/lib64/ganglia"
   only_if do
-    node[:kernel][:machine] == "x86_64" and
+    node['kernel']['machine'] == "x86_64" and
       platform?( "redhat", "centos", "fedora" )
   end
 end

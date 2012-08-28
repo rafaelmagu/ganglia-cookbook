@@ -1,4 +1,4 @@
-case node[:platform]
+case node['platform']
 when "ubuntu", "debian"
   %w{ rrdtool gmetad }.each do |pkg|
     package pkg
@@ -7,7 +7,7 @@ when "redhat", "centos", "fedora"
   include_recipe "ganglia::source"
   execute "copy gmetad init script" do
     command "cp " +
-      "/usr/src/ganglia-#{node[:ganglia][:version]}/gmetad/gmetad.init " +
+      "/usr/src/ganglia-#{node['ganglia']['version']}/gmetad/gmetad.init " +
       "/etc/init.d/gmetad"
     not_if "test -f /etc/init.d/gmetad"
   end
@@ -20,16 +20,20 @@ end
 
 query  = "recipes:ganglia AND ganglia_cluster_name:#{node['ganglia']['cluster_name']}"
 hosts = {}
-search(:node, query).each do |n|
-  # Get the ip
-  #
-  # Use the public ipv4 address (for now)
-  if n['cloud'] && n['cloud']['public_ipv4']
-    hosts[n.name] = n['cloud']['public_ipv4']
-  else
-    hosts[n.name] = ((n['network']['interfaces'][n['ganglia']['network_interface']]['addresses'] || {}).find {|a, i|
-      i['family'] == 'inet'
-    } || []).first
+if Chef::Config['solo']
+  Chef::Log.warn("This recipe uses search. Chef Solo does not support search.")
+else
+  search(:node, query).each do |n|
+    # Get the ip
+    #
+    # Use the public ipv4 address (for now)
+    if n['cloud'] && n['cloud']['public_ipv4']
+      hosts[n.name] = n['cloud']['public_ipv4']
+    else
+      hosts[n.name] = ((n['network']['interfaces'][n['ganglia']['network_interface']]['addresses'] || {}).find {|a, i|
+        i['family'] == 'inet'
+      } || []).first
+    end
   end
 end
 
