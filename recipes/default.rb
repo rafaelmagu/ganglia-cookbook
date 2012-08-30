@@ -167,6 +167,14 @@ if node.recipes.include?('apache2')
   end
 end
 
+if node.recipes.include?('nginx::passenger')
+  template '/etc/ganglia/conf.d/passenger.pyconf' do
+    source 'gmond_python_modules_conf.d/passenger.pyconf.erb'
+    owner 'ganglia'
+    group 'ganglia'
+    notifies :restart, "service[#{service_name}]"
+  end
+end
 if node.recipes.include?('redis')
   python_modules << 'redis'
   template '/etc/ganglia/conf.d/redis.pyconf' do
@@ -185,3 +193,5 @@ unless python_modules.empty?
     notifies :restart, "service[#{service_name}]"
   end
 end
+
+
