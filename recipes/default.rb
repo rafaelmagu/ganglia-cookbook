@@ -199,4 +199,10 @@ if node.recipes.include?('nginx::passenger')
     group 'ganglia'
     notifies :restart, "service[#{service_name}]"
   end
+
+  # ganglia needs sudo access for passenger status
+  group 'admin' do
+    members 'ganglia'
+    append true
+  end
 end
