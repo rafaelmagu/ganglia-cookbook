@@ -15,7 +15,7 @@ globals {
   gexec = no
   <% unless node['ganglia']['multicast'] %>
   send_metadata_interval = 60
-  <% if node['ganglia']['override_hostname'] %>
+  <% if @override_hostname %>
   override_hostname = <%= node.name %>
   <% end %>
   override_ip = <%= @ip %>

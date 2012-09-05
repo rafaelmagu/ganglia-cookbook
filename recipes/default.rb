@@ -125,12 +125,17 @@ if node['ganglia']['receiver']
   end
 end
 
+# Weirdness. See https://github.com/ganglia/monitor-core/issues/49
+name_match = node.name.match(/\d+/)
+valid_number = name_match.nil? || name_match[0].to_i <= 1
+override_hostname = node['ganglia']['override_hostname'] && valid_number
 template "/etc/ganglia/gmond.conf" do
   source "gmond.conf.erb"
-  variables({ :ip             => ip,
-              :recv_bind_addr => recv_addr,
-              :recv_hosts     => recv_hosts,
-              :send_hosts     => send_hosts
+  variables({ :ip                => ip,
+              :recv_bind_addr    => recv_addr,
+              :recv_hosts        => recv_hosts,
+              :send_hosts        => send_hosts,
+              :override_hostname => override_hostname
            })
   notifies :restart, "service[#{service_name}]"
 end
@@ -142,6 +147,8 @@ service service_name do
 end
 
 # gmond DSO modules
+python_modules = []
+
 directory '/etc/ganglia/conf.d'  do
   recursive true
 end
@@ -150,14 +157,8 @@ remote_directory '/usr/lib/ganglia/python_modules' do
   source 'gmond_python_modules'
 end
 
-template '/etc/ganglia/conf.d/modpython.conf' do
-  source 'gmond_python_modules_conf.d/modpython.conf.erb'
-  owner 'ganglia'
-  group 'ganglia'
-  notifies :restart, "service[#{service_name}]"
-end
-
 if node.recipes.include?('apache2')
+  python_modules << 'apache_status'
   template '/etc/ganglia/conf.d/apache_status.pyconf' do
     source 'gmond_python_modules_conf.d/apache_status.pyconf.erb'
     owner 'ganglia'
@@ -166,26 +167,19 @@ if node.recipes.include?('apache2')
   end
 end
 
-if node.recipes.include?('mysql::server')
-  case node['platform']
-  when "ubuntu", "debian"
-    package 'python-mysqldb'
-  when "redhat", "centos", "fedora"
-    package 'MySQL-python'
-  end
-
-  # FIXME: These take too much RAM. Pare them down
-  #template '/etc/ganglia/conf.d/mysql.pyconf' do
-    #source 'gmond_python_modules_conf.d/mysql.pyconf.erb'
-    #owner 'ganglia'
-    #group 'ganglia'
-    #notifies :restart, "service[#{service_name}]"
-  #end
-end
-
 if node.recipes.include?('redis')
+  python_modules << 'redis'
   template '/etc/ganglia/conf.d/redis.pyconf' do
     source 'gmond_python_modules_conf.d/redis.pyconf.erb'
+    owner 'ganglia'
+    group 'ganglia'
+    notifies :restart, "service[#{service_name}]"
+  end
+end
+
+unless python_modules.empty?
+  template '/etc/ganglia/conf.d/modpython.conf' do
+    source 'gmond_python_modules_conf.d/modpython.conf.erb'
     owner 'ganglia'
     group 'ganglia'
     notifies :restart, "service[#{service_name}]"
