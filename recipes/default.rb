@@ -191,18 +191,3 @@ if node.recipes.include?('redis')
     notifies :restart, "service[#{service_name}]"
   end
 end
-
-if node.recipes.include?('nginx::passenger')
-  template '/etc/ganglia/conf.d/passenger.pyconf' do
-    source 'gmond_python_modules_conf.d/passenger.pyconf.erb'
-    owner 'ganglia'
-    group 'ganglia'
-    notifies :restart, "service[#{service_name}]"
-  end
-
-  # ganglia needs sudo access for passenger status
-  group 'admin' do
-    members 'ganglia'
-    append true
-  end
-end
