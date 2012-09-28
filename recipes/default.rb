@@ -168,6 +168,7 @@ if node.recipes.include?('apache2')
 end
 
 if node.recipes.include?('nginx::passenger')
+  python_modules << 'passenger'
   template '/etc/ganglia/conf.d/passenger.pyconf' do
     source 'gmond_python_modules_conf.d/passenger.pyconf.erb'
     owner 'ganglia'
