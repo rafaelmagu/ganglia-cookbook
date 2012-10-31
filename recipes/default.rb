@@ -186,6 +186,24 @@ if node.recipes.include?('redis')
   end
 end
 
+# Uses the cookbook from https://github.com/phlipper/chef-postgresql
+if node.recipes.include?('postgresql::server')
+  python_modules << 'postgresql'
+  package 'python-psycopg2'
+
+  pg_user 'ganglia' do
+    priviliges :superuser => false, :createdb => false, :login => true
+    password node['ganglia']['postgresql']['password']
+  end
+
+  template '/etc/ganglia/conf.d/postgresql.pyconf' do
+    source 'gmond_python_modules_conf.d/postgresql.pyconf.erb'
+    owner 'ganglia'
+    group 'ganglia'
+    notifies :restart, "service[#{service_name}]"
+  end
+end
+
 unless python_modules.empty?
   template '/etc/ganglia/conf.d/modpython.conf' do
     source 'gmond_python_modules_conf.d/modpython.conf.erb'
