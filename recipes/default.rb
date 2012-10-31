@@ -192,7 +192,7 @@ if node.recipes.include?('postgresql::server')
   package 'python-psycopg2'
 
   pg_user 'ganglia' do
-    priviliges :superuser => false, :createdb => false, :login => true
+    priviliges :superuser => true, :createdb => false, :login => true
     password node['ganglia']['postgresql']['password']
   end
 
