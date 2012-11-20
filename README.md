@@ -45,5 +45,5 @@ You may need to converge again to see recently added nodes.
 
 CONTRIBUTORS
 ============
-Cramer Development (http://cramerdev.com)
-Rafael Fonseca (http://twitter.com/rafaelmagu)
+* Cramer Development (http://cramerdev.com)
+* Rafael Fonseca (http://twitter.com/rafaelmagu)
