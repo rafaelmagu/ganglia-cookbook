@@ -42,3 +42,8 @@ This cookbook has been tested on Ubuntu 10.04, 12.04 and Centos 5.5.
 
 Search seems to takes a moment or two to index.
 You may need to converge again to see recently added nodes.
+
+CONTRIBUTORS
+============
+Cramer Development (http://cramerdev.com)
+Rafael Fonseca (http://twitter.com/rafaelmagu)
