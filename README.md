@@ -22,7 +22,7 @@ ATTRIBUTES
 * node['ganglia']['receiver'] - sets the node to be a central receiver, required when node['ganglia']['multicast'] is set to _false_ (false)
 * node['ganglia']['enable\_receiver\_acl'] - whether to restrict access to the receiver's port by node's IP address, generated dynamically from the list of nodes with "recipe[ganglia]" in their run lists (true)
 * node['ganglia']['receiver\_network\_interface'] - network interface to listen for data when in receiver mode (eth1)
-* node['ganglia']['send\_to\_graphite'] - if set to _true_, the recipe will configure Gmetad to send data to node['graphite']['url'] (false)
+* node['ganglia']['send\_to\_graphite'] - if set to _true_, the recipe will configure Gmetad to send data to node['graphite']['url'] address (false)
 * node['ganglia']['graphite_prefix'] - default namespace for Graphite integration (ganglia)
 
 ## Web interface
