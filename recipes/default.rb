@@ -138,7 +138,7 @@ end
 # Weirdness. See https://github.com/ganglia/monitor-core/issues/49
 name_match = node.name.match(/\d+/)
 valid_number = name_match.nil? || name_match[0].to_i <= 1
-override_hostname = node['ganglia']['override_hostname'] && valid_number
+override_hostname = node['ganglia']['override_hostname'] #&& valid_number
 template "/etc/ganglia/gmond.conf" do
   source "gmond.conf.erb"
   variables({ :ip                => ip,
