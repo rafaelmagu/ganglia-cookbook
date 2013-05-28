@@ -10,7 +10,7 @@ globals {
   max_udp_msg_len = 1472
   mute = no
   deaf = no
-  host_dmax = 0 /*secs */
+  host_dmax = <%= node['ganglia']['host_dmax'] %> /*secs */
   cleanup_threshold = 300 /*secs */
   gexec = no
   <% unless node['ganglia']['multicast'] %>

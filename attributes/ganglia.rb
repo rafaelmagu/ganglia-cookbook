@@ -16,6 +16,7 @@ default['ganglia']['enable_receiver_acl'] = true
 default['ganglia']['receiver_network_interface'] = 'eth1'
 default['ganglia']['send_to_graphite'] = false
 default['ganglia']['graphite_prefix'] = 'ganglia'
+default['ganglia']['host_dmax'] = 0
 
 default[:ganglia][:web][:version] = '3.5.2'
 default[:ganglia][:web][:graph_engine] = 'rrdtool'
