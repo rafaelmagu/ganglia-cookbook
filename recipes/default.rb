@@ -32,7 +32,7 @@ when "ubuntu", "debian"
     action :add
   end
 
-  execute "apt-get update"
+  execute "apt-get-update"
   
   package "ganglia-monitor"
 when "redhat", "centos", "fedora"
