@@ -30,85 +30,47 @@ when "ubuntu", "debian"
     keyserver 'keyserver.ubuntu.com'
     key 'A93EFBE2'
     action :add
-  end
+end
 
-  execute "apt-get-update"
-  
-  package "ganglia-monitor"
+execute "apt-get-update"
+
+package "ganglia-monitor"
 when "redhat", "centos", "fedora"
-  #service_name = 'gmond'
+    user 'ganglia'
+    group 'ganglia'
 
-  user 'ganglia'
-  group 'ganglia'
-
-  # FIXME: See https://github.com/ganglia/monitor-core/issues/28
-  include_recipe 'ganglia::source'
-#  package 'apr'
-
-  #remote_file '/usr/src/libconfuse-2.6-1.x86_64.rpm' do
-    #source 'http://vuksan.com/centos/RPMS/x86_64/libconfuse-2.6-1.x86_64.rpm'
-  #end
-  #rpm_package 'libconfuse' do
-    #source '/usr/src/libconfuse-2.6-1.x86_64.rpm'
-  #end
-  #remote_file "/usr/src/libganglia-#{v}-1.x86_64.rpm" do
-    #source "http://vuksan.com/centos/RPMS/x86_64/libganglia-#{v}-1.x86_64.rpm"
-  #end
-  #rpm_package 'libganglia' do
-    #source "/usr/src/libganglia-#{v}-1.x86_64.rpm"
-    #version "#{v}-1"
-  #end
-  #remote_file "/usr/src/ganglia-gmond-#{v}-1.x86_64.rpm" do
-    #source "http://vuksan.com/centos/RPMS/x86_64/ganglia-gmond-#{v}-1.x86_64.rpm"
-  #end
-  #rpm_package 'ganglia-gmond' do
-    #source "/usr/src/ganglia-gmond-#{v}-1.x86_64.rpm"
-    #version "#{v}-1"
-  #end
-  #link '/usr/lib/ganglia' do
-    #to '/usr/lib64/ganglia'
-  #end
-  #remote_file "/usr/src/ganglia-gmond-modules-python-#{v}-1.x86_64.rpm" do
-    #source "http://vuksan.com/centos/RPMS/x86_64/ganglia-gmond-modules-python-#{v}-1.x86_64.rpm"
-  #end
-  #rpm_package 'ganglia-gmond-modules-python' do
-    #source "/usr/src/ganglia-gmond-modules-python-#{v}-1.x86_64.rpm"
-    #version "#{v}-1"
-  #end
+    # FIXME: See https://github.com/ganglia/monitor-core/issues/28
+    include_recipe 'ganglia::source'
 end
 
 # Set up a route for multicast
 if node['ganglia']['multicast']
-  # avahi allow host name resolution
-  case node['platform']
-  when "ubuntu", "debian"
-    package 'avahi-daemon'
-  when "redhat", "centos", "fedora"
-    package 'avahi'
-  end
-  # Add mdns route
-  route '239.2.11.71' do
-    device node['ganglia']['network_interface']
-  end
+    # avahi allow host name resolution
+    case node['platform']
+    when "ubuntu", "debian"
+        package 'avahi-daemon'
+    when "redhat", "centos", "fedora"
+        package 'avahi'
+    end
+    # Add mdns route
+    route '239.2.11.71' do
+        device node['ganglia']['network_interface']
+    end
 end
 
 # IP address to bind
-ip = (((node['network']['interfaces'][node['ganglia']['network_interface']] || {})['addresses'] || {}).find {|a, i|
-      i['family'] == 'inet'
-    } || []).first || node['ipaddress']
+ip = (((node['network']['interfaces'][node['ganglia']['network_interface']] || {})['addresses'] || {}).find {|a, i| i['family'] == 'inet'} || []).first || node['ipaddress']
 
 # Set up send hosts for non-multicast nodes
 send_hosts = []
 unless node['ganglia']['multicast']
-  if Chef::Config['solo']
-    Chef::Log.warn("This recipe uses search. Chef Solo does not support search.")
-  else
-    send_hosts = search(:node, "ganglia_receiver:true AND ganglia_cluster_name:#{node['ganglia']['cluster_name']}").map do |n|
-      n['network']['interfaces'][n['ganglia']['receiver_network_interface']]['addresses'].find {|a, i|
-        i['family'] == 'inet'
-      }.first
+    if Chef::Config['solo']
+        Chef::Log.warn("This recipe uses search. Chef Solo does not support search.")
+    else
+        send_hosts = search(:node, "ganglia_receiver:true AND ganglia_cluster_name:#{node['ganglia']['cluster_name']}").map do |n|
+            n['network']['interfaces'][n['ganglia']['receiver_network_interface']]['addresses'].find {|a, i| i['family'] == 'inet'}.first
+        end
     end
-  end
 end
 
 # Set up a 'receiver' or node that accepts connections from an allowed list of
@@ -116,23 +78,21 @@ end
 recv_addr = nil
 
 if node['ganglia']['receiver']
-  # Find the reciever network interface ipv4 IP from the node data
-  recv_iface = node['ganglia']['receiver_network_interface']
-  recv_addr = node['network']['interfaces'][recv_iface]['addresses'].find {|a, i|
-    i['family'] == 'inet'
-  }.first
+    # Find the reciever network interface ipv4 IP from the node data
+    recv_iface = node['ganglia']['receiver_network_interface']
+    recv_addr = node['network']['interfaces'][recv_iface]['addresses'].find {|a, i| i['family'] == 'inet'}.first
 
-  if Chef::Config['solo']
-    Chef::Log.warn("This recipe uses search. Chef Solo does not support search.")
-  else
-    recv_hosts = search(:node, "recipes:ganglia AND ganglia_cluster_name:#{node['ganglia']['cluster_name']} AND ganglia_multicast:false").map do |n|
-      if n['cloud'] && n['cloud']['public_ipv4']
-        n['cloud']['public_ipv4']
-      else
-        n['ipaddress']
-      end
+    if Chef::Config['solo']
+        Chef::Log.warn("This recipe uses search. Chef Solo does not support search.")
+    else
+        recv_hosts = search(:node, "recipes:ganglia AND ganglia_cluster_name:#{node['ganglia']['cluster_name']} AND ganglia_multicast:false").map do |n|
+            if n['cloud'] && n['cloud']['public_ipv4']
+                n['cloud']['public_ipv4']
+            else
+                n['ipaddress']
+            end
+        end
     end
-  end
 end
 
 # Weirdness. See https://github.com/ganglia/monitor-core/issues/49
@@ -140,93 +100,91 @@ name_match = node.name.match(/\d+/)
 valid_number = name_match.nil? || name_match[0].to_i <= 1
 override_hostname = node['ganglia']['override_hostname'] #&& valid_number
 template "/etc/ganglia/gmond.conf" do
-  source "gmond.conf.erb"
-  variables({ :ip                => ip,
-              :recv_bind_addr    => recv_addr,
-              :recv_hosts        => recv_hosts,
-              :send_hosts        => send_hosts,
-              :override_hostname => override_hostname
-           })
-  notifies :restart, "service[#{service_name}]"
+    source "gmond.conf.erb"
+    variables({ :ip      => ip,
+      :recv_bind_addr    => recv_addr,
+      :recv_hosts        => recv_hosts,
+      :send_hosts        => send_hosts,
+      :override_hostname => override_hostname
+    })
+    notifies :restart, "service[#{service_name}]"
 end
 
 service service_name do
-  pattern "gmond"
-  supports :restart => true
-  action [ :enable, :start ]
+    pattern "gmond"
+    supports :restart => true
+    action [ :enable, :start ]
 end
 
 # gmond DSO modules
 python_modules = []
 
 directory '/etc/ganglia/conf.d'  do
-  recursive true
+    recursive true
 end
 
 remote_directory '/usr/lib/ganglia/python_modules' do
-  source 'gmond_python_modules'
+    source 'gmond_python_modules'
 end
 
 if node.recipes.include?('apache2')
-  python_modules << 'apache_status'
-  template '/etc/ganglia/conf.d/apache_status.pyconf' do
-    source 'gmond_python_modules_conf.d/apache_status.pyconf.erb'
-    owner 'ganglia'
-    group 'ganglia'
-    notifies :restart, "service[#{service_name}]"
-  end
+    python_modules << 'apache_status'
+    template '/etc/ganglia/conf.d/apache_status.pyconf' do
+        source 'gmond_python_modules_conf.d/apache_status.pyconf.erb'
+        owner 'ganglia'
+        group 'ganglia'
+        notifies :restart, "service[#{service_name}]"
+    end
 end
 
 if node.recipes.include?('nginx::passenger')
-  python_modules << 'passenger'
-  template '/etc/ganglia/conf.d/passenger.pyconf' do
-    source 'gmond_python_modules_conf.d/passenger.pyconf.erb'
-    owner 'ganglia'
-    group 'ganglia'
-    notifies :restart, "service[#{service_name}]"
-  end
+    python_modules << 'passenger'
+    template '/etc/ganglia/conf.d/passenger.pyconf' do
+        source 'gmond_python_modules_conf.d/passenger.pyconf.erb'
+        owner 'ganglia'
+        group 'ganglia'
+        notifies :restart, "service[#{service_name}]"
+    end
 end
 if node.recipes.include?('redis')
-  python_modules << 'redis'
-  template '/etc/ganglia/conf.d/redis.pyconf' do
-    source 'gmond_python_modules_conf.d/redis.pyconf.erb'
-    owner 'ganglia'
-    group 'ganglia'
-    notifies :restart, "service[#{service_name}]"
-  end
+    python_modules << 'redis'
+    template '/etc/ganglia/conf.d/redis.pyconf' do
+        source 'gmond_python_modules_conf.d/redis.pyconf.erb'
+        owner 'ganglia'
+        group 'ganglia'
+        notifies :restart, "service[#{service_name}]"
+    end
 end
 
 # Uses the cookbook from https://github.com/phlipper/chef-postgresql
 if node.recipes.include?('postgresql::server')
-  python_modules << 'postgresql'
-  package 'python-psycopg2'
+    python_modules << 'postgresql'
+    package 'python-psycopg2'
 
-  pg_user 'ganglia' do
-    priviliges :superuser => true, :createdb => false, :login => true
-    password node['ganglia']['postgresql']['password']
-  end
+    pg_user 'ganglia' do
+        priviliges :superuser => true, :createdb => false, :login => true
+        password node['ganglia']['postgresql']['password']
+    end
 
-  template '/etc/ganglia/conf.d/postgresql.pyconf' do
-    source 'gmond_python_modules_conf.d/postgresql.pyconf.erb'
-    owner 'ganglia'
-    group 'ganglia'
-    notifies :restart, "service[#{service_name}]"
-  end
+    template '/etc/ganglia/conf.d/postgresql.pyconf' do
+        source 'gmond_python_modules_conf.d/postgresql.pyconf.erb'
+        owner 'ganglia'
+        group 'ganglia'
+        notifies :restart, "service[#{service_name}]"
+    end
 end
 
 unless python_modules.empty?
-  template '/etc/ganglia/conf.d/modpython.conf' do
-    source 'gmond_python_modules_conf.d/modpython.conf.erb'
-    owner 'ganglia'
-    group 'ganglia'
-    notifies :restart, "service[#{service_name}]"
-  end
+    template '/etc/ganglia/conf.d/modpython.conf' do
+        source 'gmond_python_modules_conf.d/modpython.conf.erb'
+        owner 'ganglia'
+        group 'ganglia'
+        notifies :restart, "service[#{service_name}]"
+    end
 
-  # ganglia needs sudo access for passenger status
-  group 'admin' do
-    members 'ganglia'
-    append true
-  end
+    # ganglia needs sudo access for passenger status
+    group 'admin' do
+        members 'ganglia'
+        append true
+    end
 end
-
-
