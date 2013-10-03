@@ -13,14 +13,14 @@ globals {
   host_dmax = <%= node['ganglia']['host_dmax'] %> /*secs */
   cleanup_threshold = 300 /*secs */
   gexec = no
-  <% if node['ganglia']['unicast'] %>
-  send_metadata_interval = 60
   <% if @override_hostname %>
   override_hostname = <%= node.name %>
   <% end %>
   <% if node['ganglia']['override_ip'] %>
   override_ip = <%= @ip %>
   <% end %>
+  <% if node['ganglia']['unicast'] %>
+  send_metadata_interval = 60
   <% else %>
   send_metadata_interval = 0
   <% end %>
