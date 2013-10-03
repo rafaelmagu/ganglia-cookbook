@@ -44,7 +44,7 @@ when "redhat", "centos", "fedora"
 end
 
 # Set up a route for multicast
-if node['ganglia']['multicast']
+unless node['ganglia']['unicast']
     # avahi allow host name resolution
     case node['platform']
     when "ubuntu", "debian"
@@ -63,7 +63,7 @@ ip = (((node['network']['interfaces'][node['ganglia']['network_interface']] || {
 
 # Set up send hosts for non-multicast nodes
 send_hosts = []
-unless node['ganglia']['multicast']
+if node['ganglia']['unicast']
     if Chef::Config['solo']
         Chef::Log.warn("This recipe uses search. Chef Solo does not support search.")
     else
