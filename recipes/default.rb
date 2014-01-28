@@ -146,10 +146,41 @@ if node.recipes.include?('nginx::passenger')
         notifies :restart, "service[#{service_name}]"
     end
 end
+
 if node.recipes.include?('redis')
     python_modules << 'redis'
     template '/etc/ganglia/conf.d/redis.pyconf' do
         source 'gmond_python_modules_conf.d/redis.pyconf.erb'
+        owner 'ganglia'
+        group 'ganglia'
+        notifies :restart, "service[#{service_name}]"
+    end
+end
+
+if node.recipes.include?('rabbitmq')
+    python_modules << 'rabbitmq'
+    template '/etc/ganglia/conf.d/rabbitmq.pyconf' do
+        source 'gmond_python_modules_conf.d/rabbitmq.pyconf.erb'
+        owner 'ganglia'
+        group 'ganglia'
+        notifies :restart, "service[#{service_name}]"
+    end
+end
+
+if node.recipes.include?('php-fpm')
+    python_modules << 'php_fpm'
+    template '/etc/ganglia/conf.d/php_fpm.pyconf' do
+        source 'gmond_python_modules_conf.d/php_fpm.pyconf.erb'
+        owner 'ganglia'
+        group 'ganglia'
+        notifies :restart, "service[#{service_name}]"
+    end
+end
+
+if node.recipes.include?('nginx')
+    python_modules << 'nginx_status'
+    template '/etc/ganglia/conf.d/nginx_status.pyconf' do
+        source 'gmond_python_modules_conf.d/nginx_status.pyconf.erb'
         owner 'ganglia'
         group 'ganglia'
         notifies :restart, "service[#{service_name}]"
