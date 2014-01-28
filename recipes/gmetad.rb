@@ -18,20 +18,20 @@ directory "/var/lib/ganglia/rrds" do
     recursive true
 end
 
-query  = "recipes:ganglia AND ganglia_cluster_name:#{node['ganglia']['cluster_name']}"
+query  = "recipes:ganglia AND ganglia_cluster_name:#{node[:ganglia][:cluster_name]}"
 hosts = {}
-if Chef::Config['solo']
+if Chef::Config[:solo]
     Chef::Log.warn("This recipe uses search. Chef Solo does not support search.")
 else
     search(:node, query).each do |n|
         # Get the ip
         #
         # Use the public ipv4 address (for now)
-        if n['cloud'] && n['cloud']['public_ipv4']
-            hosts[n.name] = n['cloud']['public_ipv4']
+        if n[:cloud] && n[:cloud][:public_ipv4]
+            hosts[n.name] = n[:cloud][:public_ipv4]
         else
-            hosts[n.name] = ((n['network']['interfaces'][n['ganglia']['network_interface']]['addresses'] || {}).find {|a, i|
-            i['family'] == 'inet'
+            hosts[n.name] = ((n[:network][:interfaces][n[:ganglia][:network_interface]][:addresses] || {}).find {|a, i|
+            i[:family] == 'inet'
             } || []).first
         end
     end

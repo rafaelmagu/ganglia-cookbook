@@ -1,3 +1,4 @@
+name             "ganglia"
 maintainer       "Heavy Water Software Inc."
 maintainer_email "darrin@heavywater.ca"
 license          "Apache 2.0"
@@ -9,5 +10,6 @@ version          "0.1.2"
   supports os
 end
 
-recommends "graphite"
-suggests "iptables"
+depends "graphite"
+depends "iptables"
+depends "apache2"

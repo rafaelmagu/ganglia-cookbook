@@ -18,15 +18,15 @@
 #
 
 gem_package 'gmetric'
-v = node['ganglia']['version']
+v = node[:ganglia][:version]
 service_name = 'ganglia-monitor'
 
-case node['platform']
+case node[:platform]
 when "ubuntu", "debian"
   apt_repository 'ganglia' do
     uri 'http://ppa.launchpad.net/rufustfirefly/ganglia/ubuntu'
-    distribution node['lsb']['codename']
-    components ['main']
+    distribution node[:lsb][:codename]
+    components [:main]
     keyserver 'keyserver.ubuntu.com'
     key 'A93EFBE2'
     action :add
@@ -44,9 +44,9 @@ when "redhat", "centos", "fedora"
 end
 
 # Set up a route for multicast
-unless node['ganglia']['unicast']
+unless node[:ganglia][:unicast]
     # avahi allow host name resolution
-    case node['platform']
+    case node[:platform]
     when "ubuntu", "debian"
         package 'avahi-daemon'
     when "redhat", "centos", "fedora"
@@ -54,21 +54,21 @@ unless node['ganglia']['unicast']
     end
     # Add mdns route
     route '239.2.11.71' do
-        device node['ganglia']['network_interface']
+        device node[:ganglia][:network_interface]
     end
 end
 
 # IP address to bind
-ip = (((node['network']['interfaces'][node['ganglia']['network_interface']] || {})['addresses'] || {}).find {|a, i| i['family'] == 'inet'} || []).first || node['ipaddress']
+ip = (((node[:network][:interfaces][node[:ganglia][:network_interface]] || {})[:addresses] || {}).find {|a, i| i[:family] == 'inet'} || []).first || node[:ipaddress]
 
 # Set up send hosts for non-multicast nodes
 send_hosts = []
-if node['ganglia']['unicast']
-    if Chef::Config['solo']
+if node[:ganglia][:unicast]
+    if Chef::Config[:solo]
         Chef::Log.warn("This recipe uses search. Chef Solo does not support search.")
     else
-        send_hosts = search(:node, "ganglia_receiver:true AND ganglia_cluster_name:#{node['ganglia']['cluster_name']}").map do |n|
-            n['network']['interfaces'][n['ganglia']['receiver_network_interface']]['addresses'].find {|a, i| i['family'] == 'inet'}.first
+        send_hosts = search(:node, "ganglia_receiver:true AND ganglia_cluster_name:#{node[:ganglia][:cluster_name]}").map do |n|
+            n[:network][:interfaces][n[:ganglia][:receiver_network_interface]][:addresses].find {|a, i| i[:family] == 'inet'}.first
         end
     end
 end
@@ -77,19 +77,19 @@ end
 # udp senders
 recv_addr = nil
 
-if node['ganglia']['receiver']
+if node[:ganglia][:receiver]
     # Find the reciever network interface ipv4 IP from the node data
-    recv_iface = node['ganglia']['receiver_network_interface']
-    recv_addr = node['network']['interfaces'][recv_iface]['addresses'].find {|a, i| i['family'] == 'inet'}.first
+    recv_iface = node[:ganglia][:receiver_network_interface]
+    recv_addr = node[:network][:interfaces][recv_iface][:addresses].find {|a, i| i[:family] == 'inet'}.first
 
-    if Chef::Config['solo']
+    if Chef::Config[:solo]
         Chef::Log.warn("This recipe uses search. Chef Solo does not support search.")
     else
-        recv_hosts = search(:node, "recipes:ganglia AND ganglia_cluster_name:#{node['ganglia']['cluster_name']} AND ganglia_multicast:false").map do |n|
-            if n['cloud'] && n['cloud']['public_ipv4']
-                n['cloud']['public_ipv4']
+        recv_hosts = search(:node, "recipes:ganglia AND ganglia_cluster_name:#{node[:ganglia][:cluster_name]} AND ganglia_multicast:false").map do |n|
+            if n[:cloud] && n[:cloud][:public_ipv4]
+                n[:cloud][:public_ipv4]
             else
-                n['ipaddress']
+                n[:ipaddress]
             end
         end
     end
@@ -98,7 +98,7 @@ end
 # Weirdness. See https://github.com/ganglia/monitor-core/issues/49
 name_match = node.name.match(/\d+/)
 valid_number = name_match.nil? || name_match[0].to_i <= 1
-override_hostname = node['ganglia']['override_hostname'] #&& valid_number
+override_hostname = node[:ganglia][:override_hostname] #&& valid_number
 template "/etc/ganglia/gmond.conf" do
     source "gmond.conf.erb"
     variables({ :ip      => ip,
@@ -127,7 +127,7 @@ remote_directory '/usr/lib/ganglia/python_modules' do
     source 'gmond_python_modules'
 end
 
-if node.recipes.include?('apache2')
+if node[:recipes].include?('apache2')
     python_modules << 'apache_status'
     template '/etc/ganglia/conf.d/apache_status.pyconf' do
         source 'gmond_python_modules_conf.d/apache_status.pyconf.erb'
@@ -137,7 +137,7 @@ if node.recipes.include?('apache2')
     end
 end
 
-if node.recipes.include?('nginx::passenger')
+if node[:recipes].include?('nginx::passenger')
     python_modules << 'passenger'
     template '/etc/ganglia/conf.d/passenger.pyconf' do
         source 'gmond_python_modules_conf.d/passenger.pyconf.erb'
@@ -147,7 +147,7 @@ if node.recipes.include?('nginx::passenger')
     end
 end
 
-if node.recipes.include?('redis')
+if node[:recipes].include?('redis')
     python_modules << 'redis'
     template '/etc/ganglia/conf.d/redis.pyconf' do
         source 'gmond_python_modules_conf.d/redis.pyconf.erb'
@@ -157,7 +157,7 @@ if node.recipes.include?('redis')
     end
 end
 
-if node.recipes.include?('rabbitmq')
+if node[:recipes].include?('rabbitmq')
     python_modules << 'rabbitmq'
     template '/etc/ganglia/conf.d/rabbitmq.pyconf' do
         source 'gmond_python_modules_conf.d/rabbitmq.pyconf.erb'
@@ -167,7 +167,7 @@ if node.recipes.include?('rabbitmq')
     end
 end
 
-if node.recipes.include?('php-fpm')
+if node[:recipes].include?('php-fpm')
     python_modules << 'php_fpm'
     template '/etc/ganglia/conf.d/php_fpm.pyconf' do
         source 'gmond_python_modules_conf.d/php_fpm.pyconf.erb'
@@ -177,7 +177,7 @@ if node.recipes.include?('php-fpm')
     end
 end
 
-if node.recipes.include?('nginx')
+if node[:recipes].include?('nginx')
     python_modules << 'nginx_status'
     template '/etc/ganglia/conf.d/nginx_status.pyconf' do
         source 'gmond_python_modules_conf.d/nginx_status.pyconf.erb'
@@ -188,13 +188,13 @@ if node.recipes.include?('nginx')
 end
 
 # Uses the cookbook from https://github.com/phlipper/chef-postgresql
-if node.recipes.include?('postgresql::server')
+if node[:recipes].include?('postgresql::server')
     python_modules << 'postgresql'
     package 'python-psycopg2'
 
     pg_user 'ganglia' do
         priviliges :superuser => true, :createdb => false, :login => true
-        password node['ganglia']['postgresql']['password']
+        password node[:ganglia][:postgresql][:password]
     end
 
     template '/etc/ganglia/conf.d/postgresql.pyconf' do

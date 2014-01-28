@@ -24,4 +24,4 @@ default[:ganglia][:web][:graph_engine] = "rrdtool"
 default[:ganglia][:web][:auth_system] = "readonly"
 default[:ganglia][:web][:path] = "/opt/ganglia-web"
 
-default[:ganglia][:postgresql]["password"] = secure_password
+default[:ganglia][:postgresql][:password] = secure_password
