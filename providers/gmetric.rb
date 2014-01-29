@@ -22,8 +22,6 @@ action :enable do
 
 end
 
-default_action :create
-
 action :disable do
 
   file "/usr/local/bin/#{new_resource.script_name}-ganglia" do

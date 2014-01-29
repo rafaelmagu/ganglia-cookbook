@@ -24,8 +24,6 @@ action :enable do
 
 end
 
-default_action :create
-
 action :disable do
 
   file "/usr/lib/ganglia/python_modules/#{new_resource.module_name}.py" do
